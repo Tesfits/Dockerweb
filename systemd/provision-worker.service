@@ -1,0 +1,14 @@
+[Unit]
+Description=User Provisioning Worker
+After=network.target
+
+[Service]
+Type=simple
+User=provisionuser
+WorkingDirectory=/opt/provision_worker
+ExecStart=/usr/bin/node provision_worker.js
+Restart=always
+Environment=FILEBROWSER_ADMIN_TOKEN=your_filebrowser_admin_token_here
+
+[Install]
+WantedBy=multi-user.target

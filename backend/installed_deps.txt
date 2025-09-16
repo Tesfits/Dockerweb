@@ -1,0 +1,16 @@
+bcrypt
+bcryptjs
+cors
+dotenv
+express
+express-mongo-sanitize
+express-rate-limit
+express-validator
+helmet
+joi
+jsonwebtoken
+mongoose
+multer
+nodemon
+winston
+xss-clean

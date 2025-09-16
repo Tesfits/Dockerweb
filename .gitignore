@@ -1,0 +1,4 @@
+db/data/
+git rm -r --cached db/data/
+filebrowser/db/filebrowser.db
+git rm --cached filebrowser/db/filebrowser.db

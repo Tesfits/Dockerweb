@@ -1,0 +1,123 @@
+services:
+  # Backend (Express + Mongo)
+  backend:
+    image: project-root-backend
+    container_name: backend
+    build: ./backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - /opt/provision_jobs/pending:/opt/provision_jobs/pending
+    environment:
+      - MONGO_URI=mongodb://root:example@mongo:27017/admin
+      - JWT_SECRET=P@ssw0rd!
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  # MongoDB
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+
+  # Mongo Express
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: pass
+    ports:
+      - "8082:8081"
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  # Samba
+  samba:
+    image: dperson/samba:latest
+    container_name: samba
+    restart: always
+    ports:
+      - "137-139:137-139/udp"
+      - "445:445"
+    volumes:
+      - samba_data:/mount
+    environment:
+      - USERID=1000
+      - GROUPID=1000
+      - SAMBA_USER=guest
+      - SAMBA_PASSWORD=guest
+    networks:
+      - app-network
+
+  # Frontend (React)
+  frontend:
+    image: project-root-frontend
+    container_name: frontend
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # VS Code / code-server
+  vscode:
+    image: linuxserver/code-server
+    container_name: vscode
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      - PASSWORD=yourpassword
+    ports:
+      - "8443:8443"
+    volumes:
+      - vscode_data:/config
+      - ./project-root:/config/project
+    networks:
+      - app-network
+
+  # FileBrowser
+  filebrowser:
+    image: filebrowser/filebrowser:s6
+    container_name: filebrowser
+    environment:
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - "8080:80"
+    volumes:
+      - filebrowser_data:/srv
+    networks:
+      - app-network
+
+# Volumes
+volumes:
+  mongo_data:
+  samba_data:
+  vscode_data:
+  filebrowser_data:
+
+# Networks
+networks:
+  app-network:
+    driver: bridge
